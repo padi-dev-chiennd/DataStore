@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Data Store</string>
+    <string name="tool_bar">Data Storage</string>
+    <string name="internal_storage">Internal storage</string>
+    <string name="external_storage">External storage</string>
+    <string name="enter_text">Enter text</string>
+    <string name="todo">TODO</string>
+    <string name="read">READ</string>
+    <string name="save">SAVE</string>
+</resources>
