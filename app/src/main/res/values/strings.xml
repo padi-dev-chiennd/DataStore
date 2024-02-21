@@ -2,9 +2,9 @@
     <string name="app_name">Data Store</string>
     <string name="tool_bar">Data Storage</string>
     <string name="internal_storage">Internal storage</string>
-    <string name="external_storage">External storage</string>
+    <string name="external_storage">Storage Access Framework</string>
     <string name="enter_text">Enter text</string>
     <string name="todo">TODO</string>
-    <string name="read">READ</string>
-    <string name="save">SAVE</string>
+    <string name="read">External storage</string>
+    <string name="save">MediaStore</string>
 </resources>

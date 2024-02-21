@@ -13,14 +13,17 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.widget.CompoundButton
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import com.example.datastore.data.AppPreferences
 import com.example.datastore.databinding.ActivityMainBinding
 import java.io.File
 import java.io.FileOutputStream
@@ -43,7 +46,7 @@ class MainActivity : AppCompatActivity() {
         if (ContextCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED &&  Build.VERSION.SDK_INT <= Build.VERSION_CODES.R
+            ) != PackageManager.PERMISSION_GRANTED &&  Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q
         ) {
             // Permission not granted, request it
             ActivityCompat.requestPermissions(
@@ -61,20 +64,34 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        binding.externalStorage.setOnClickListener {
+        binding.SAF.setOnClickListener {
             // Gọi hàm để tạo tệp
             createFile()
         }
         binding.internalStorage.setOnClickListener {
-            saveTextToFile(this,"chien.txt",binding.inputText.text.toString())
+            saveTextToFile(this,binding.inputFileName.text.toString(),binding.inputText.text.toString())
         }
-        binding.getExternalStorage.setOnClickListener {
+        binding.externalStorage.setOnClickListener {
             saveImageToExternalStorage()
         }
-        binding.saveExternalStorage.setOnClickListener {
+        binding.mediaStore.setOnClickListener {
             val yourBitmap: Bitmap = BitmapFactory.decodeResource(resources,R.drawable.img_test)
-            val imageName = "example_image.png"
+            val imageName = "example_image.png" // Set the desired image name
+
             saveImageToGallery(this,yourBitmap,imageName)
+        }
+        val isDarkMode = AppPreferences.getThemeMode(this)
+        if (isDarkMode) AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+        else AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+        binding.btnSwitch.isChecked = isDarkMode
+        binding.btnSwitch.setOnCheckedChangeListener { _: CompoundButton, isChecked: Boolean ->
+            // Save the updated theme mode when the switch is toggled
+            AppPreferences.setThemeMode(this, isChecked)
+            if (isChecked) AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            else AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+
+            recreate()
         }
 
     }
@@ -150,7 +167,7 @@ class MainActivity : AppCompatActivity() {
         val imageFileName = "JPEG_" + SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(
             Date()
         ) + ".jpg"
-
+//        val storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
         val storageDir =
             Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES)
 
@@ -160,8 +177,7 @@ class MainActivity : AppCompatActivity() {
 
             // yourBitmap is the Bitmap object you want to save
             val yourBitmap: Bitmap = BitmapFactory.decodeResource(resources,R.drawable.img_test)
-
-                yourBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
+            yourBitmap.compress(Bitmap.CompressFormat.JPEG, 100, fos)
             fos.flush()
             fos.close()
 
@@ -189,12 +205,6 @@ class MainActivity : AppCompatActivity() {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
             WRITE_EXTERNAL_STORAGE_REQUEST_CODE -> {
-                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // Permission granted, proceed with saving the image
-                    // Call your saveImageToExternalStorage function here
-                } else {
-                    // Permission denied, handle accordingly (e.g., show a message)
-                }
             }
         }
     }
