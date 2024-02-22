@@ -1,6 +1,7 @@
 package com.example.datastore
 
 import android.app.Activity
+import android.content.ContentUris
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
@@ -23,7 +24,10 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.datastore.data.AppPreferences
+import com.example.datastore.data.Video
 import com.example.datastore.databinding.ActivityMainBinding
 import java.io.File
 import java.io.FileOutputStream
@@ -32,17 +36,27 @@ import java.io.OutputStream
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private var createFileLauncher: ActivityResultLauncher<Intent>? = null
     private val WRITE_EXTERNAL_STORAGE_REQUEST_CODE = 123
+    private val REQUEST_READ_EXTERNAL_STORAGE_PERMISSION = 456
+    private val videoList = mutableListOf<Video>()
 
     @RequiresApi(Build.VERSION_CODES.Q)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this,R.layout.activity_main)
+
+        binding.recyclerView.layoutManager = LinearLayoutManager(this)
+        val adapter = VideoAdapter(videoList)
+        binding.recyclerView.adapter = adapter
+
+        // Thực hiện truy vấn và cập nhật danh sách video
+        queryVideos()
         if (ContextCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE
@@ -206,6 +220,58 @@ class MainActivity : AppCompatActivity() {
         when (requestCode) {
             WRITE_EXTERNAL_STORAGE_REQUEST_CODE -> {
             }
+        }
+    }
+    private fun queryVideos() {
+        val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+        } else {
+            MediaStore.Audio.Media.EXTERNAL_CONTENT_URI
+        }
+
+        val projection = arrayOf(
+            MediaStore.Audio.Media._ID,
+            MediaStore.Audio.Media.DISPLAY_NAME,
+            MediaStore.Audio.Media.DURATION,
+            MediaStore.Audio.Media.SIZE
+        )
+
+        val selection = "${MediaStore.Audio.Media.DURATION} >= ?"
+        val selectionArgs = arrayOf(
+            TimeUnit.MILLISECONDS.convert(0, TimeUnit.MINUTES).toString()
+        )
+
+        val sortOrder = "${MediaStore.Audio.Media.DISPLAY_NAME} ASC"
+
+        val query = contentResolver.query(
+            collection,
+            projection,
+            selection,
+            selectionArgs,
+            sortOrder
+        )
+
+        query?.use { cursor ->
+            val idColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+            val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DISPLAY_NAME)
+            val durationColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+            val sizeColumn = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE)
+
+            while (cursor.moveToNext()) {
+                val id = cursor.getLong(idColumn)
+                val name = cursor.getString(nameColumn)
+                val duration = cursor.getInt(durationColumn)
+                val size = cursor.getInt(sizeColumn)
+
+                val contentUri: Uri = ContentUris.withAppendedId(
+                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+                    id
+                )
+
+                videoList.add(Video(contentUri, name, duration, size))
+            }
+
+            binding.recyclerView.adapter?.notifyDataSetChanged()
         }
     }
 }

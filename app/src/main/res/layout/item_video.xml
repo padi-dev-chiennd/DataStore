@@ -1,0 +1,38 @@
+<!-- res/layout/item_audio.xml -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+<!--    <ImageView-->
+<!--        android:id="@+id/audioThumbnailImageView"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="200dp"-->
+<!--        android:scaleType="centerCrop"-->
+<!--        android:contentDescription="audio_thumbnail" />-->
+
+    <TextView
+        android:id="@+id/audioNameTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="audio_name_placeholder" />
+
+    <TextView
+        android:id="@+id/audioDurationTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:text="audio_duration_placeholder" />
+</LinearLayout>
