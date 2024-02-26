@@ -14,6 +14,7 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.provider.MediaStore
+import android.util.Log
 import android.widget.CompoundButton
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
@@ -52,23 +53,39 @@ class MainActivity : AppCompatActivity() {
         binding = DataBindingUtil.setContentView(this,R.layout.activity_main)
 
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
-        val adapter = VideoAdapter(videoList)
+        val adapter = VideoAdapter(this,videoList)
         binding.recyclerView.adapter = adapter
 
-        // Thực hiện truy vấn và cập nhật danh sách video
-        queryVideos()
+        // Kiểm tra quyền WRITE_EXTERNAL_STORAGE và yêu cầu nếu chưa được cấp
         if (ContextCompat.checkSelfPermission(
                 this,
                 android.Manifest.permission.WRITE_EXTERNAL_STORAGE
-            ) != PackageManager.PERMISSION_GRANTED &&  Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q
+            ) != PackageManager.PERMISSION_GRANTED
         ) {
-            // Permission not granted, request it
+            // Yêu cầu quyền WRITE_EXTERNAL_STORAGE
             ActivityCompat.requestPermissions(
                 this,
                 arrayOf(android.Manifest.permission.WRITE_EXTERNAL_STORAGE),
                 WRITE_EXTERNAL_STORAGE_REQUEST_CODE
             )
         }
+
+// Kiểm tra và yêu cầu quyền READ_EXTERNAL_STORAGE nếu phiên bản Android là 10 (Q) hoặc thấp hơn
+//        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    android.Manifest.permission.READ_EXTERNAL_STORAGE
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // Yêu cầu quyền READ_EXTERNAL_STORAGE
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                    REQUEST_READ_EXTERNAL_STORAGE_PERMISSION
+                )
+            }
+//        }
+
         createFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
                 // Xử lý khi người dùng đã chọn nơi lưu tệp thành công
@@ -107,7 +124,7 @@ class MainActivity : AppCompatActivity() {
 
             recreate()
         }
-
+        queryVideos()
     }
     private fun saveTextToFile(context: Context, fileName: String, content: String) {
         try {
@@ -238,7 +255,7 @@ class MainActivity : AppCompatActivity() {
 
         val selection = "${MediaStore.Audio.Media.DURATION} >= ?"
         val selectionArgs = arrayOf(
-            TimeUnit.MILLISECONDS.convert(0, TimeUnit.MINUTES).toString()
+            TimeUnit.MILLISECONDS.convert(1, TimeUnit.MINUTES).toString()
         )
 
         val sortOrder = "${MediaStore.Audio.Media.DISPLAY_NAME} ASC"
@@ -268,7 +285,11 @@ class MainActivity : AppCompatActivity() {
                     id
                 )
 
-                videoList.add(Video(contentUri, name, duration, size))
+
+                videoList.add(Video(id,contentUri, name, duration, size))
+                for (video in videoList) {
+                    Log.d("VideoList", "Name: ${video.name}, Uri: ${video.uri}")
+                }
             }
 
             binding.recyclerView.adapter?.notifyDataSetChanged()
