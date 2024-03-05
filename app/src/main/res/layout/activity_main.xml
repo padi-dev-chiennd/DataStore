@@ -141,8 +141,26 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/recyclerView"
+            android:visibility="gone"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btnSwitch"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</layout>
+        <Button
+            android:id="@+id/start"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="@id/btnSwitch"
+            app:layout_constraintStart_toEndOf="@+id/btnSwitch"/>
+        <com.github.mikephil.charting.charts.BarChart
+            android:id="@+id/customBarchart"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginHorizontal="15dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layoutDescription="@string/save"
+
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnSwitch" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </layout>

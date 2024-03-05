@@ -26,15 +26,21 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.example.datastore.data.AppPreferences
 import com.example.datastore.data.Video
 import com.example.datastore.databinding.ActivityMainBinding
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.YAxis
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.io.OutputStream
 import java.text.SimpleDateFormat
+import java.util.ArrayList
 import java.util.Date
 import java.util.Locale
 import java.util.concurrent.TimeUnit
@@ -45,6 +51,7 @@ class MainActivity : AppCompatActivity() {
     private var createFileLauncher: ActivityResultLauncher<Intent>? = null
     private val WRITE_EXTERNAL_STORAGE_REQUEST_CODE = 123
     private val REQUEST_READ_EXTERNAL_STORAGE_PERMISSION = 456
+    private val PERMISSION_REQUEST_READ_MEDIA_AUDIO = 1
     private val videoList = mutableListOf<Video>()
 
     @RequiresApi(Build.VERSION_CODES.Q)
@@ -71,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         }
 
 // Kiểm tra và yêu cầu quyền READ_EXTERNAL_STORAGE nếu phiên bản Android là 10 (Q) hoặc thấp hơn
-//        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
             if (ContextCompat.checkSelfPermission(
                     this,
                     android.Manifest.permission.READ_EXTERNAL_STORAGE
@@ -84,7 +91,9 @@ class MainActivity : AppCompatActivity() {
                     REQUEST_READ_EXTERNAL_STORAGE_PERMISSION
                 )
             }
-//        }
+        }else{
+            checkAndRequestPermissions()
+        }
 
         createFileLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -124,8 +133,73 @@ class MainActivity : AppCompatActivity() {
 
             recreate()
         }
+        binding.start.setOnClickListener{
+            val intent = Intent(this,PieChart::class.java )
+            startActivity(intent)
+
+        }
         queryVideos()
+        setDataChart()
     }
+
+    private fun setDataChart() {
+
+        // Setting labels for the XAxis
+        val labels = ArrayList<String>()
+        labels.add("CN")
+        labels.add("Th2")
+        labels.add("Th3")
+        labels.add("Th4")
+        labels.add("Th5")
+        labels.add("Th6")
+        labels.add("Th7")
+
+        // Customizing XAxis to set labels at the bottom of each column
+        val xAxis: XAxis = binding.customBarchart.xAxis
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
+        xAxis.setDrawGridLines(false) // Disable X-axis grid lines
+        xAxis.valueFormatter = IndexAxisValueFormatter(labels)
+
+        // Customizing YAxis
+        val yAxis: YAxis = binding.customBarchart.axisLeft
+        yAxis.granularity = 1f
+        yAxis.axisMinimum = 0f
+        binding.customBarchart.description.text = ""
+
+        yAxis.setDrawGridLines(false)
+        binding.customBarchart.axisRight.isEnabled = false
+        binding.customBarchart.setTouchEnabled(false)
+//        binding.customBarchart.setFitBars(true)
+        val groupSpace = 0.2f
+        val barSpace = 0.02f
+        val barWidth = 0.3f
+//
+//        binding.customBarchart.(R.color.black)
+
+
+        val barEntries = ArrayList<BarEntry>()
+        barEntries.add(BarEntry(0f,1f))
+        barEntries.add(BarEntry(1f,2f))
+        barEntries.add(BarEntry(2f,3f))
+        barEntries.add(BarEntry(3f,3f))
+        barEntries.add(BarEntry(4f,3f))
+        barEntries.add(BarEntry(5f,3f))
+        barEntries.add(BarEntry(6f,7f))
+
+
+
+        val dataSet = BarDataSet(barEntries,null)
+        dataSet.setDrawValues(false)
+        dataSet.color = getColor(R.color.blue)
+
+        val barData = BarData(dataSet)
+        barData.barWidth = 0.5f
+
+        binding.customBarchart.data = barData
+        binding.customBarchart.invalidate()
+
+    }
+
     private fun saveTextToFile(context: Context, fileName: String, content: String) {
         try {
             // Lấy đường dẫn đến thư mục internal storage của ứng dụng
@@ -226,19 +300,39 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, "Error saving image", Toast.LENGTH_SHORT).show()
         }
     }
+    private fun checkAndRequestPermissions() {
+        if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.READ_MEDIA_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted, request it
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.READ_MEDIA_AUDIO), PERMISSION_REQUEST_READ_MEDIA_AUDIO)
+        } else {
+            // Permission has been granted, proceed with accessing audio files
+        }
+    }
 
-     //Handle the result of the permission request
-    override fun onRequestPermissionsResult(
-        requestCode: Int,
-        permissions: Array<String>,
-        grantResults: IntArray
-    ) {
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
-            WRITE_EXTERNAL_STORAGE_REQUEST_CODE -> {
+            PERMISSION_REQUEST_READ_MEDIA_AUDIO -> {
+                if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // Permission was granted, proceed with accessing audio files
+                } else {
+                    // Permission was denied. You can inform the user that the permission is necessary
+                }
             }
         }
     }
+     //Handle the result of the permission request
+//    override fun onRequestPermissionsResult(
+//        requestCode: Int,
+//        permissions: Array<String>,
+//        grantResults: IntArray
+//    ) {
+//        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+//        when (requestCode) {
+//            WRITE_EXTERNAL_STORAGE_REQUEST_CODE -> {
+//            }
+//        }
+//    }
     private fun queryVideos() {
         val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)

@@ -54,6 +54,11 @@ dependencies {
     implementation ("androidx.datastore:datastore-preferences:1.0.0")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
+    implementation ("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation ("com.github.JustinGeorgeJoseph:PopupBarChart:v1.0.1")
+    implementation ("com.diogobernardino:williamchart:3.10.1")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
+    implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
 
 
     testImplementation("junit:junit:4.13.2")
