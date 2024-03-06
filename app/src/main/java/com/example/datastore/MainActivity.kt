@@ -169,13 +169,6 @@ class MainActivity : AppCompatActivity() {
         yAxis.setDrawGridLines(false)
         binding.customBarchart.axisRight.isEnabled = false
         binding.customBarchart.setTouchEnabled(false)
-//        binding.customBarchart.setFitBars(true)
-        val groupSpace = 0.2f
-        val barSpace = 0.02f
-        val barWidth = 0.3f
-//
-//        binding.customBarchart.(R.color.black)
-
 
         val barEntries = ArrayList<BarEntry>()
         barEntries.add(BarEntry(0f,1f))
@@ -186,7 +179,8 @@ class MainActivity : AppCompatActivity() {
         barEntries.add(BarEntry(5f,3f))
         barEntries.add(BarEntry(6f,7f))
 
-
+        val legend = binding.customBarchart.legend
+        legend.isEnabled = false
 
         val dataSet = BarDataSet(barEntries,null)
         dataSet.setDrawValues(false)
